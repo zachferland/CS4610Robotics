@@ -1,0 +1,36 @@
+<<<<<<< .mine
+// /* <file.h> searches in system directories only */
+// #include <avr/pgmspace.h>
+=======
+#ifndef TEST_HEAD
+#define TEST_HEAD
+>>>>>>> .r90
+
+<<<<<<< .mine
+// /* "file.h" searches in local directories, then system directories */
+// #include "pololu/orangutan.h"
+// #include "ohmm/ohmm.h"
+=======
+#include <avr/pgmspace.h>
+#include "pololu/orangutan.h"
+#include "ohmm/ohmm.h"
+>>>>>>> .r90
+
+// // radius of wheel in mm
+// #define WHEEL_RADIUS 40
+// // baseline in mm
+// #define BASELINE 201
+
+<<<<<<< .mine
+// // return v and w
+// // v = velocity in mm/sec
+// // w = the current ccw angular velocity in rad/sec
+// // l & r = velocity of right and left wheel in rev/sec
+// void dgvw();
+=======
+void dgvw();
+>>>>>>> .r90
+// void dsvw(float v, float w);
+// void dsvl(float v, float l);
+
+#endif

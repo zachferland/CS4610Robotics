@@ -1,0 +1,256 @@
+/*******************************************************************************
+*
+* CS4610: Lab 4
+* Group 1: Nicholas Jones, Zach Ferland, Qimeng Song
+* 
+*
+*******************************************************************************/
+
+// SHOUlD RENAME CLASS
+package l4;
+
+import com.googlecode.javacpp.*;
+import com.googlecode.javacv.*;
+import com.googlecode.javacv.cpp.*;
+import static com.googlecode.javacv.cpp.opencv_calib3d.*;
+import static com.googlecode.javacv.cpp.opencv_contrib.*;
+import static com.googlecode.javacv.cpp.opencv_core.*;
+import static com.googlecode.javacv.cpp.opencv_features2d.*;
+import static com.googlecode.javacv.cpp.opencv_flann.*;
+import static com.googlecode.javacv.cpp.opencv_highgui.*;
+import static com.googlecode.javacv.cpp.opencv_imgproc.*;
+import static com.googlecode.javacv.cpp.opencv_legacy.*;
+import static com.googlecode.javacv.cpp.opencv_ml.*;
+import static com.googlecode.javacv.cpp.opencv_objdetect.*;
+import static com.googlecode.javacv.cpp.opencv_video.*;
+
+import ohmm.*;
+import static ohmm.OHMM.*;
+import ohmm.OHMM.AnalogChannel;
+import static ohmm.OHMM.AnalogChannel.*;
+import ohmm.OHMM.DigitalPin;
+import static ohmm.OHMM.DigitalPin.*;
+
+
+public class CvDemo extends CvBase {
+  
+  /** Default max FPS. **/
+  public static final int DEF_MAX_FPS = 5;
+
+  /** Application name.**/
+  public static final String APPNAME = "CvDemo";
+
+  /** Time to quit? **/
+  protected boolean allDone = false;
+
+  /** Clicked pixel coords pending RGB dump, or -1 if none. **/
+  protected int[] dumpXY = new int[] {-1, -1};
+
+  /** Processed image buffer, allocated on first call to {@link #process}. **/
+  protected IplImage procImg = null;
+
+  // Class level vars for blob detection
+  protected CvMemStorage storage = CvMemStorage.create();
+  protected CvSeq contour = new  CvSeq();
+  protected IplImage bimg = null;
+  protected IplImage frameHSV  = null;
+  protected CvScalar hsvMin = cvScalar(0, 0, 0, 0);
+  protected CvScalar hsvMax = cvScalar(0, 0, 0, 0);
+  protected double colorRange = 25; 
+  // change this to ball point!!
+  // change to -1, and what is empty cvpoint. ?
+  protected CvPoint ball = new CvPoint();
+  protected int maxArea = 0;
+  protected CvPoint target = new CvPoint();
+  protected boolean run = false;
+
+  // boolean flag for if key "r" is pressed
+  boolean ready = false;
+
+  /** Sets options for the demo. **/
+  public CvDemo() { super(APPNAME); maxFPS = DEF_MAX_FPS; }
+
+  // determine if robot is ready for commands 
+  protected Boolean isReady() {
+    // hmm, 
+    return run && ball.x()!=0  && ball.y()!=0;
+  }
+
+  //get current x y of ball.
+  protected void setRunHuh(Boolean r) {
+    run = r;
+  }
+
+  //return int array with x and y 
+  protected int[] getBallPos(){
+    int[] ballPos = {ball.x(), ball.y()}; 
+    return ballPos;
+  }
+
+  //return target, array with x and y 
+  protected int[] getTargetPos(){
+    int[] targetPos = {target.x(), target.y()}; 
+    return targetPos;
+  }
+
+  /** Help for the extra command line parameter. **/
+  protected void cmdHelpExt() {
+    System.out.println("F: desired max FPS, default "+DEF_MAX_FPS);
+  }
+
+  /** Shows the extra command line parameter. **/
+  protected String cmdHelpExtParams() { return "[F] "; }
+
+  /** Help for the extra GUI keyboard commands. **/
+  protected void guiHelpExt() {
+    System.out.println("f/s -- increase/decrease max FPS");
+    System.out.println("d -- done processing");
+  }
+
+  /** Override process in CVBase **/
+  protected IplImage process(IplImage frame) { 
+
+     //Transform RGB to HSV
+    if (frameHSV == null) //allocate image on first call
+        frameHSV = cvCreateImage(frame.cvSize(), frame.depth(), frame.nChannels());
+    
+    cvCvtColor(frame, frameHSV, CV_BGR2HSV);
+
+    //handoff clicked pixel coords from handleMouse()
+    int x = -1, y = -1;
+    synchronized (dumpXY)
+      { x = dumpXY[0]; y = dumpXY[1]; dumpXY[0] = dumpXY[1] = -1; }
+
+    //when user click do everything here. 
+    if ((frame != null) && (x >= 0) && (y >= 0)) {
+      //on a click it sets the target postion
+      target.set(x, y);
+      //get pixel color
+      CvScalar h = cvGet2D(frameHSV, y, x);
+
+      // Set min HUE
+      hsvMin.setVal(0, h.getVal(0) - colorRange);
+      hsvMin.setVal(1, h.getVal(1) - colorRange);
+      hsvMin.setVal(2, h.getVal(2) - colorRange);
+      // Set max HUE
+      hsvMax.setVal(0, h.getVal(0) + colorRange);
+      hsvMax.setVal(1, h.getVal(1) + colorRange);
+      hsvMax.setVal(2, h.getVal(2) + colorRange);
+    }
+
+    //allocate processed image buffer once only
+    if (procImg == null)
+      procImg = IplImage.create(frame.cvSize(), IPL_DEPTH_8U, 3);
+  
+    //copy pixels to output
+    cvCopy(frame, procImg);
+
+    // only if a color has been selected, follow and draw
+    if (!(hsvMin.getVal(0) == 0)) {
+
+      //create space for image
+      if (bimg == null) //allocate binary image on first call
+        bimg = IplImage.create(cvSize(frame.width(), frame.height()), IPL_DEPTH_8U, 1);
+
+      //binary image
+      cvInRangeS(frameHSV, hsvMin, hsvMax, bimg);
+
+      //get countours
+      cvFindContours(bimg, storage, contour, Loader.sizeof(CvContour.class),
+                 CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+      
+      maxArea = 0;
+      //loop through contours 
+      for (CvSeq c = contour; c!=null && !c.isNull(); c = c.h_next()) {
+        if (c.elem_size() > 0) {
+          CvRect rect = cvBoundingRect(c, 0);
+          //use for testing to see all possible contours
+          cvRectangle(procImg, cvPoint(rect.x(), rect.y()), cvPoint(rect.x() + rect.width(), rect.y() + rect.height()), CvScalar.BLUE, 2, 8, 0 );
+          int area = rect.x() * rect.y();
+          if (area > maxArea) {
+            maxArea = area;
+            int rCenterX =  rect.x() + (int)Math.floor(rect.width() / 2);
+            int rCenterY =  rect.y() + (int)Math.floor(rect.height() / 2);
+            ball.set(rCenterX, rCenterY);
+          }
+        }
+      }
+      //CROSS DRAWING ON BALL
+      // cvCircle(procImg, cvPoint(rCenterX, rCenterY), rWidth, CvScalar.BLUE, 2, 8, 0 );
+      // horizontal line
+      // cvLine(procImg,
+      //   cvPoint(rCenterX - 10, rCenterY), //pt1 
+      //   cvPoint(rCenterX + 10, rCenterY), //pt2
+      //   CvScalar.BLUE, //color
+      //   2, 8, 0); //line thickness, type, shift
+  
+      // // vertical line
+      // cvLine(procImg,
+      //   cvPoint(rCenterX, rCenterY - 10), //pt1 
+      //   cvPoint(rCenterX, rCenterY + 10), //pt2
+      //   CvScalar.BLUE, //color
+      //   2, 8, 0); //line thickness, type, shift
+    } 
+
+    cvClearMemStorage(storage);
+    return procImg; //return a reference to the processed image
+  }
+
+  /** Are we {@link #allDone}? **/
+  protected boolean doneProcessing() { return allDone; }
+
+  /** Handle our custom keypresses. **/
+  protected boolean handleKeyExt(int code) {
+    switch (code) {
+    case 'f': case 's':
+      maxFPS += (code == 'f') ? 1 : ((maxFPS > 1) ? -1 : 0);
+      System.out.println("max FPS: "+maxFPS);
+      break;
+    case 'r': case 'R': run = true; break;
+    case 'd': allDone = true; break;
+    default: msg("unhandled keycode: "+code);
+    }
+    return true;
+  }
+
+  /**
+   * Show pixel color at mouse click.
+   * 
+   * Chains to default impl to show debug info about mouse events.
+   **/
+  protected void handleMouse(int event, int x, int y, int flags) {
+    if (event == CV_EVENT_LBUTTONDOWN)
+      synchronized (dumpXY) { dumpXY[0] = x; dumpXY[1] = y; }
+    super.handleMouse(event, x, y, flags);
+  }
+
+  /** Releases allocated memory. **/
+  public void release() { 
+    if (procImg != null) { procImg.release(); procImg = null; }
+    super.release();
+  }
+
+  /** Handle extra command line parameters. **/
+  public int initExt(int argc, String argv[], int ate) {
+    if(argc > ate) {
+      try {
+        maxFPS = Integer.parseInt(argv[ate]); ate++;
+        System.out.println("max FPS: "+maxFPS);
+      } catch (NumberFormatException nfe) {
+        System.err.println("max FPS not an int, using default: "+DEF_MAX_FPS);
+      }
+    } else {
+      System.out.println("using default max FPS: "+maxFPS);
+    }
+
+    return ate;
+  }
+  
+  /** Program entry point. **/
+  public static void main(String argv[]) {
+    CvDemo cvd = new CvDemo();
+    cvd.init(argv.length, argv);
+    cvd.mainLoop();
+    cvd.release();
+  }
+}

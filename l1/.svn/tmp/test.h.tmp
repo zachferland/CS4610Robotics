@@ -1,0 +1,53 @@
+/* <file.h> searches in system directories only */
+#include <avr/pgmspace.h>
+
+/* "file.h" searches in local directories, then system directories */
+#include "pololu/orangutan.h"
+#include "ohmm/ohmm.h"
+
+
+// radius of wheel in mm
+#define WHEEL_RADIUS 40
+// baseline in mm
+#define BASELINE 201
+
+// return v and w
+// v = velocity in mm/sec
+// w = the current ccw angular velocity in rad/sec
+// l & r = velocity of right and left wheel in rev/sec
+<<<<<<< .mine
+void dgvw()
+{
+  float l, r, v, w;
+
+  // get left and right speed in rev/sec
+  motGetVel(&l, &r);
+
+  float c; //circumference 
+  c = 2*M_PI*WHEEL_RADIUS;
+
+  //robot forward velocity in mm/sec (rev/s * circumference)
+  v = c * 0.5 * (l + r);
+
+  //robot ccw angular velocity
+  //ccw ???
+  w = (WHEEL_RADIUS / BASELINE) * (r - l);
+
+}
+
+void dsvw(float v, float w) {
+
+  float l, r;
+
+  // get r wheel velocity in rev/sec
+  // is this rev/sec or mm/sec stil?? mm/sec
+  r = (2 * v + BASELINE * w) / (2 * WHEEL_RADIUS);
+
+  // get l wheel velocity in rev/sec
+  l = (2 * v - BASELINE * w) / (2 * WHEEL_RADIUS);
+
+  motSetVelCmd(l, r)
+
+}=======
+void dgvw();
+>>>>>>> .r76

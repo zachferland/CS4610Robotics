@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/robotics-s14/!svn/ver/33/g1/l0/svp-demo-program
+END
+svp-demo-program.c
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/robotics-s14/!svn/ver/33/g1/l0/svp-demo-program/svp-demo-program.c
+END
+makefile
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/robotics-s14/!svn/ver/33/g1/l0/svp-demo-program/makefile
+END
+makefile_AVR.inc
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/robotics-s14/!svn/ver/4/g1/l0/svp-demo-program/makefile_AVR.inc
+END

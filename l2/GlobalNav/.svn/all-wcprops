@@ -1,0 +1,107 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/robotics-s14/!svn/ver/1340/g1/l2/GlobalNav
+END
+Vertex.class
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/robotics-s14/!svn/ver/1297/g1/l2/GlobalNav/Vertex.class
+END
+Map.class
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/robotics-s14/!svn/ver/1297/g1/l2/GlobalNav/Map.class
+END
+Echo.class
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/robotics-s14/!svn/ver/1216/g1/l2/GlobalNav/Echo.class
+END
+Edge.java
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/robotics-s14/!svn/ver/1297/g1/l2/GlobalNav/Edge.java
+END
+GlobalNav.java
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/robotics-s14/!svn/ver/1340/g1/l2/GlobalNav/GlobalNav.java
+END
+Node.class
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/robotics-s14/!svn/ver/1297/g1/l2/GlobalNav/Node.class
+END
+VGraph.class
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/robotics-s14/!svn/ver/1297/g1/l2/GlobalNav/VGraph.class
+END
+Coordinate.class
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/robotics-s14/!svn/ver/1216/g1/l2/GlobalNav/Coordinate.class
+END
+map.txt
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/robotics-s14/!svn/ver/1216/g1/l2/GlobalNav/map.txt
+END
+Map.java
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/robotics-s14/!svn/ver/1297/g1/l2/GlobalNav/Map.java
+END
+Vertex.java
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/robotics-s14/!svn/ver/1297/g1/l2/GlobalNav/Vertex.java
+END
+Obstacle.class
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/robotics-s14/!svn/ver/1297/g1/l2/GlobalNav/Obstacle.class
+END
+Node.java
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/robotics-s14/!svn/ver/1297/g1/l2/GlobalNav/Node.java
+END
+VGraph.java
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/robotics-s14/!svn/ver/1297/g1/l2/GlobalNav/VGraph.java
+END
+Edge.class
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/robotics-s14/!svn/ver/1297/g1/l2/GlobalNav/Edge.class
+END
+GlobalNav.class
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/robotics-s14/!svn/ver/1297/g1/l2/GlobalNav/GlobalNav.class
+END
+Obstacle.java
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/robotics-s14/!svn/ver/1297/g1/l2/GlobalNav/Obstacle.java
+END

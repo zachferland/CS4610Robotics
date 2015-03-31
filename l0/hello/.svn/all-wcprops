@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/robotics-s14/!svn/ver/33/g1/l0/hello
+END
+hello.c
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/robotics-s14/!svn/ver/4/g1/l0/hello/hello.c
+END
+makefile
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/robotics-s14/!svn/ver/33/g1/l0/hello/makefile
+END
+makefile_AVR.inc
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/robotics-s14/!svn/ver/4/g1/l0/hello/makefile_AVR.inc
+END

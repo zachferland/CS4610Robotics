@@ -1,0 +1,155 @@
+/*******************************************************************************
+*
+* CS4610: Lab 4
+* Group 1: Nicholas Jones, Zach Ferland
+* 
+*
+*******************************************************************************/
+package l5;
+
+package l5;
+
+import java.io.IOException;
+
+import ohmm.*;
+import ohmm.Grasp.*;
+import Jama.*;
+import april.tag.*;
+
+public class EKF { 
+    //not sure if i want this here, maybe keep in main function
+    // should maybe create seperate class for ekf where i pass ohmm?
+   
+    // Current Robot Pose x y t
+    protected float[] pose = new float[3];
+    // Current motor positions  l r  
+    protected float[] motPos = new float [2];
+    //creates covariance matrix of all zeros, put this in initialzie func
+    //covariancePose or sigmaPose
+    Matrix covariancePose = new Matrix(3,3);
+
+    public void setupOhmm(OHMMDrive ohmm) {
+        // Set up robot
+        ohmm.armEnable(true);
+        ohmm.driveSetPose(0f, 0f, 0f);
+        ohmm.armHome();
+        while(ohmm.armActive());
+    }
+
+    public void predictionProcess(OHMMDrive ohmm) {
+	//these can probably be class levelvar
+	int X = 0;
+	int Y = 1;
+	int T = 2;
+	int LEFT = 0;
+	int RIGHT = 0;
+
+	//get current robot pose - x y t
+	float[] newPose = new float[3];
+	ohmm.driveGetPose(newPose);
+
+	//get wheel rotations since last update - 1 = left, 2 = right
+	float[] newMotPos = new float[2];
+	ohmm.motGetPos(newMotPos);
+	//calculate difference since last time
+	float motPosLDiff = newMotPos[LEFT] - motPos[LEFT];
+	float motPosRDiff = newMotPos[RIGHT] - motPos[RIGHT];
+	
+	//Create wheel diagnol covariance matrix
+	Matrix covarianceWheels = new Matrix(2,2);
+	//set standard deviation of wheels 
+	float sdwheel = 0.1f;
+	//set proportional standard deviation or fixed constand as diagonal matrix
+	covarianceWheels.set(1,1,sdwheel);
+	covarianceWheels.set(2,2,sdwheel);
+	
+	//create jacobians of pose and wheels and their tranpose
+	//initalize
+	//Matrix jacobianPose = new M
+	double[][] jacobianPoseArray = new double[3][3];
+	//not really sure is the jacobian calculations are correct
+	jacobianPoseArray[0][0] = newPose[X] / pose[X];
+	jacobianPoseArray[0][1] = newPose[X] / pose[Y];
+	jacobianPoseArray[0][2] = newPose[X] / pose[T];
+	jacobianPoseArray[1][0] = newPose[Y] / pose[X];
+        jacobianPoseArray[1][1] = newPose[Y] / pose[Y];
+        jacobianPoseArray[1][2] = newPose[Y] / pose[T];
+	jacobianPoseArray[2][0] = newPose[T] / pose[X];
+        jacobianPoseArray[2][1] = newPose[T] / pose[Y];
+        jacobianPoseArray[2][2] = newPose[T] / pose[T];
+	
+	Matrix jacobianPose = new Matrix(jacobianPoseArray);
+	//transpose of matrix 
+	Matrix jacobianPoseT = jacobianPose.transpose();
+
+	double[][] jacobianWheelArray = new double[3][2];
+	jacobianWheelArray[0][0] = newPose[X] / motPosLDiff;
+	jacobianWheelArray[0][1] = newPose[X] / motPosRDiff;
+	jacobianWheelArray[1][0] = newPose[Y] / motPosLDiff;
+        jacobianWheelArray[1][1] = newPose[Y] / motPosRDiff;
+	jacobianWheelArray[2][0] = newPose[T] / motPosLDiff;
+        jacobianWheelArray[2][1] = newPose[T] / motPosRDiff;
+	
+	Matrix jacobianWheel = new Matrix(jacobianWheelArray);
+	//Transpose of matrix
+	Matrix jacobianWheelT = jacobianWheel.transpose();
+
+	//Start Calculations here
+	// newsigmaP = (Jp * sigmaP * Jpt) + (Jw * sigmaW * Jwt)
+	Matrix newCovariancePose = new Matrix(3,3);
+	
+	//pose prediction error (Jp * sigmaP * Jpt) 
+	Matrix tempP = jacobianPose.times(covariancePose);
+	Matrix errorPose = tempP.times(jacobianPoseT);
+	
+	//wheel error
+	Matrix tempW = jacobianWheel.times(covarianceWheels);
+	Matrix errorWheel = tempW.times(jacobianWheelT);
+
+	newCovariancePose = errorPose.plus(errorWheel);
+
+	//Everything updated, reset class level vars 
+	pose = newPose;
+	motPos = newMotPos;
+	covariancePose = newCovariancePose; 
+	
+    }
+
+    //Function to calculate single pose error value, best option is probably the 
+    //the area of the ellipse
+    //returns a single value of pose, how do I get single percent here
+    // i can either compare ellipse areas, or keeps same area and change percent
+    //change percent?
+    public void poseError(){
+	
+
+	
+    }	
+	
+    public static void main(final String[] args) throws IOException, InterruptedException {
+        OHMMDrive ohmm =
+          (OHMMDrive) OHMM.makeOHMM(new String[]{"-r", "/dev/ttyACM1"});
+        if (ohmm == null) System.exit(0);
+
+        //setupOhmm(ohmm);
+
+        // Start Prediction Phase/ Process function
+        // run it in a sepearate thread
+
+
+
+        // Set up CV Image Server & Thread
+        final CvDemo cvd = new CvDemo();
+        Thread cvThread = new Thread() {
+            public void run() {
+                cvd.init(args.length, args);
+                cvd.mainLoop();
+                cvd.release();
+            }
+        };
+        cvThread.start();
+
+
+        ohmm.close();
+    }
+}
